@@ -25,37 +25,63 @@ public class TareaController {
     private final TareaService tareaService;
     private final ProyectoService proyectoService;
 
-    /**
-     * Inyección de dependencias.
-     */
     public TareaController(TareaService tareaService, ProyectoService proyectoService) {
         this.tareaService = tareaService;
         this.proyectoService = proyectoService;
     }
 
     /**
-     * Muestra la lista de tareas de un proyecto.
-     * @param proyectoId ID del proyecto.
-     * @param model Modelo de la vista.
-     * @return Página de listado de tareas.
+     * Muestra la lista de todas las tareas junto con sus proyectos.
+     */
+    @GetMapping("/todas")
+    public String listarTodasLasTareas(Model model) {
+        List<Tarea> tareas = tareaService.listarTodasLasTareas();
+
+        if (tareas == null || tareas.isEmpty()) {
+            model.addAttribute("mensaje", "No hay tareas registradas.");
+        }
+
+        model.addAttribute("tareas", tareas);
+
+        return "tareas/listado_general";
+    }
+
+
+    /**
+     * Muestra la lista de tareas de un proyecto específico.
      */
     @GetMapping("/proyecto/{proyectoId}")
     public String listarTareasPorProyecto(@PathVariable Long proyectoId, Model model) {
-        List<Tarea> tareas = tareaService.listarTareasPorProyecto(proyectoId);
         Proyecto proyecto = proyectoService.obtenerProyectoPorId(proyectoId);
+    
+        if (proyecto == null) {
+            model.addAttribute("error", "El proyecto con ID " + proyectoId + " no existe o ha sido eliminado.");
+            return "tareas/index";
+        }
+    
+        List<Tarea> tareas = tareaService.listarTareasPorProyecto(proyectoId);
+    
+        if (tareas == null || tareas.isEmpty()) {
+            model.addAttribute("mensaje", "No hay tareas registradas en los proyectos.");
+        }
+    
         model.addAttribute("tareas", tareas);
         model.addAttribute("proyecto", proyecto);
-        return "tarea/index";
+    
+        return "tareas/index";
     }
+    
 
     /**
      * Muestra el formulario para crear una nueva tarea dentro de un proyecto.
-     * @param proyectoId ID del proyecto.
-     * @param model Modelo de la vista.
-     * @return Página del formulario de creación de tareas.
      */
     @GetMapping("/crear/{proyectoId}")
     public String mostrarFormularioCreacion(@PathVariable Long proyectoId, Model model) {
+        Proyecto proyecto = proyectoService.obtenerProyectoPorId(proyectoId);
+        if (proyecto == null) {
+            return "redirect:/proyectos";
+        }
+
         model.addAttribute("tarea", new Tarea());
         model.addAttribute("proyectoId", proyectoId);
         return "tareas/crear";
@@ -63,55 +89,62 @@ public class TareaController {
 
     /**
      * Guarda una nueva tarea en la base de datos.
-     * @param tarea Datos de la tarea.
-     * @param proyectoId ID del proyecto asociado.
-     * @return Redirección a la lista de tareas del proyecto.
      */
-    @PostMapping
+    @PostMapping("/guardar")
     public String guardarTarea(@ModelAttribute Tarea tarea, @RequestParam Long proyectoId) {
         Proyecto proyecto = proyectoService.obtenerProyectoPorId(proyectoId);
-        if (proyecto != null) {
-            tarea.setProyecto(proyecto);
-            tareaService.guardarTarea(tarea);
+        if (proyecto == null) {
+            return "redirect:/proyectos";
         }
+
+        tarea.setProyecto(proyecto);
+        tareaService.guardarTarea(tarea);
+
         return "redirect:/tareas/proyecto/" + proyectoId;
     }
 
     /**
      * Muestra el formulario para editar una tarea existente.
-     * @param id ID de la tarea.
-     * @param model Modelo de la vista.
-     * @return Página del formulario de edición.
      */
     @GetMapping("/editar/{id}")
     public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
         Tarea tarea = tareaService.obtenerTareaPorId(id);
+        if (tarea == null) {
+            return "redirect:/tareas";
+        }
+
         model.addAttribute("tarea", tarea);
+        model.addAttribute("proyecto", tarea.getProyecto());
         return "tareas/editar";
     }
 
     /**
      * Actualiza una tarea en la base de datos.
-     * @param id ID de la tarea.
-     * @param tarea Datos actualizados.
-     * @return Redirección a la lista de tareas del proyecto.
      */
     @PostMapping("/actualizar/{id}")
     public String actualizarTarea(@PathVariable Long id, @ModelAttribute Tarea tarea) {
+        Tarea tareaExistente = tareaService.obtenerTareaPorId(id);
+        if (tareaExistente == null || tareaExistente.getProyecto() == null) {
+            return "redirect:/tareas";
+        }
+
+        tarea.setProyecto(tareaExistente.getProyecto());
         tareaService.actualizarTarea(id, tarea);
-        return "redirect:/tareas/proyecto/" + tarea.getProyecto().getId();
+
+        return "redirect:/tareas/proyecto/" + tareaExistente.getProyecto().getId();
     }
 
     /**
      * Elimina una tarea.
-     * @param id ID de la tarea.
-     * @return Redirección a la lista de tareas del proyecto.
      */
     @GetMapping("/eliminar/{id}")
     public String eliminarTarea(@PathVariable Long id) {
         Tarea tarea = tareaService.obtenerTareaPorId(id);
-        Long proyectoId = tarea.getProyecto().getId();
-        tareaService.eliminarTarea(id);
-        return "redirect:/tareas/proyecto/" + proyectoId;
+        if (tarea != null && tarea.getProyecto() != null) {
+            Long proyectoId = tarea.getProyecto().getId();
+            tareaService.eliminarTarea(id);
+            return "redirect:/tareas/proyecto/" + proyectoId;
+        }
+        return "redirect:/proyectos";
     }
 }

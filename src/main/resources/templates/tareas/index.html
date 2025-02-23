@@ -3,48 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <title>Lista de Tareas</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-    <!-- Incluir la barra de navegación -->
-    <div th:replace="~{layout/navbar :: navbar}"></div>
+<div class="container mt-4">
+    <h1 class="mb-4">Tareas del Proyecto: <span th:text="${proyecto.nombre}"></span></h1>
+    <a th:href="@{/tareas/crear/{id}(id=${proyecto.id})}" class="btn btn-success mb-3">Añadir Tarea</a>
 
-    <div class="container mt-4">
-        <h1 class="mb-4">Tareas del Proyecto: <span th:text="${proyecto.nombre}"></span></h1>
-        <a th:href="@{/tareas/crear/{id}(id=${proyecto.id})}" class="btn btn-success mb-3">Añadir Tarea</a>
-        
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Título</th>
-                    <th>Descripción</th>
-                    <th>Fecha Límite</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="tarea : ${tareas}">
-                    <td th:text="${tarea.id}"></td>
-                    <td th:text="${tarea.titulo}"></td>
-                    <td th:text="${tarea.descripcion}"></td>
-                    <td th:text="${tarea.fechaLimite}"></td>
-                    <td th:text="${tarea.estado}"></td>
-                    <td>
-                        <a th:href="@{/tareas/editar/{id}(id=${tarea.id})}" class="btn btn-warning">Editar</a>
-                        <a th:href="@{/tareas/eliminar/{id}(id=${tarea.id})}" class="btn btn-danger"
-                           onclick="return confirm('¿Estás seguro de eliminar esta tarea?');">
-                           Eliminar
-                        </a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <a href="/proyectos" class="btn btn-primary">Volver a Proyectos</a>
+    <!-- Mostrar mensaje si no hay tareas -->
+    <div th:if="${tareas == null or #lists.isEmpty(tareas)}" class="alert alert-info">
+        No hay tareas registradas para este proyecto.
     </div>
 
-</body>
-</html>
+    <table class="table table-bordered table-striped" th:if="${tareas != null and not #lists.isEmpty(tareas)}">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Fecha Límite</th>
+                <th>Estado</th>
+                <th>Proyecto</th> <!-- Nueva columna -->
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="tarea : ${tareas}">
+                <td th:text="${tarea.id}"></td>
+                <td th:text="${tarea.titulo}"></td>
+                <td th:text="${tarea.descripcion}"></td>
+                <td th:text="${tarea.fechaLimite}"></td>
+                <td th:text="${tarea.estado}"></td>
+                <td th:text="${tarea.proyecto.nombre}"></td> <!-- Mostrar el nombre del proyecto -->
+                <td>
+                    <a th:href="@{/tareas/editar/{id}(id=${tarea.id})}" class="btn btn-warning">Editar</a>
+                    <a th:href="@{/tareas/eliminar/{id}(id=${tarea.id})}" class="btn btn-danger"
+                       onclick="return confirm('¿Estás seguro de eliminar esta tarea?');">
+                       Eliminar
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <a href="/proyectos" class="btn btn-primary">Volver a Proyectos</a>
+</div>

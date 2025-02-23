@@ -1,8 +1,10 @@
 package com.example.crudusuario.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.crudusuario.model.Tarea;
 import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.crudusuario.model.Tarea;
 
 /**
  * Repositorio JPA para la entidad Tarea.
@@ -15,4 +17,6 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
      * @return Lista de tareas del proyecto.
      */
     List<Tarea> findByProyectoId(Long proyectoId);
+    List<Tarea> findAll();
+
 }

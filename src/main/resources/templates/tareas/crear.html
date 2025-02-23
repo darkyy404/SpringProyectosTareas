@@ -12,9 +12,12 @@
 
     <div class="container mt-4">
         <h1>Crear Nueva Tarea</h1>
-        <form th:action="@{/tareas}" th:object="${tarea}" method="post">
+
+        <!-- Se ha corregido la acción del formulario -->
+        <form th:action="@{/tareas/guardar}" th:object="${tarea}" method="post">
+            <!-- Se envía el ID del proyecto como campo oculto -->
             <input type="hidden" th:value="${proyectoId}" name="proyectoId">
-            
+
             <div class="mb-3">
                 <label for="titulo" class="form-label">Título de la Tarea:</label>
                 <input type="text" id="titulo" th:field="*{titulo}" class="form-control" required>
@@ -37,6 +40,7 @@
             </div>
             <button type="submit" class="btn btn-primary">Guardar Tarea</button>
         </form>
+
         <a th:href="@{/tareas/proyecto/{id}(id=${proyectoId})}" class="btn btn-secondary mt-3">Volver</a>
     </div>
 
