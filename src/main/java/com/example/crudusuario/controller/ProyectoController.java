@@ -2,8 +2,6 @@ package com.example.crudusuario.controller;
 
 import java.util.List;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,69 +11,51 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.crudusuario.model.Proyecto;
-import com.example.crudusuario.model.Usuario;
 import com.example.crudusuario.service.ProyectoService;
 import com.example.crudusuario.service.UsuarioService;
 
 /**
  * Controlador para gestionar proyectos.
  */
-@Controller
-@RequestMapping("/proyectos")
+@Controller //Indica que esta clase es un controlador de Spring MVC
+@RequestMapping("/proyectos") //Indica que las rutas de este controlador empiezan con /proyectos
 public class ProyectoController {
+    // Dependencias del servicio de proyectos
     private final ProyectoService proyectoService;
-    private final UsuarioService usuarioService;
 
     /**
-     * Inyección de dependencias.
+     * Constructor con Inyección de dependencias
      */
     public ProyectoController(ProyectoService proyectoService, UsuarioService usuarioService) {
         this.proyectoService = proyectoService;
-        this.usuarioService = usuarioService;
     }
 
     /**
-     * Muestra la lista de proyectos.
-     * @param model Modelo de la vista.
-     * @return Página de listado de proyectos.
+     * Muestra la lista de proyectos
      */
-    @GetMapping
+    @GetMapping // Indica que este método maneja peticiones GET
     public String listarProyectos(Model model) {
-        List<Proyecto> proyectos = proyectoService.listarProyectos();
-        model.addAttribute("proyectos", proyectos);
-        return "proyectos/index";
+        List<Proyecto> proyectos = proyectoService.listarProyectos(); // Obtiene la lista de proyectos desde el servicio
+        model.addAttribute("proyectos", proyectos); // Agrega los proyectos al modelo para la vista
+        return "proyectos/index"; // Devuelve la vista en la carpeta proyectos
     }
 
     /**
-     * Muestra el formulario para crear un nuevo proyecto.
-     * @param model Modelo de la vista.
-     * @return Página del formulario de creación.
+     * Muestra el formulario para crear un nuevo proyecto
      */
     @GetMapping("/crear")
     public String mostrarFormularioCreacion(Model model) {
-        model.addAttribute("proyecto", new Proyecto());
+        model.addAttribute("proyecto", new Proyecto()); // Se pasa un nuevo objeto Proyecto vacío a la vista
         return "proyectos/crear";
     }
 
     /**
-     * Guarda un nuevo proyecto en la base de datos.
-     * @param proyecto Datos del proyecto.
-     * @return Redirección a la lista de proyectos.
+     * Maneja la solicitud POST para guardar un nuevo proyecto en la base de datos
      */
     @PostMapping("/guardar")
     public String guardarProyecto(@ModelAttribute Proyecto proyecto) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        Usuario usuario = usuarioService.buscarPorUsername(username);
-        if (usuario == null) {
-            throw new RuntimeException("Usuario no encontrado");
-        }
-
-        proyecto.setUsuario(usuario); // Asignar el usuario antes de guardar
-        proyectoService.guardarProyecto(proyecto);
-
-        return "redirect:/proyectos";
+        proyectoService.guardarProyecto(proyecto);  // Guarda el proyecto en la base de datos
+        return "redirect:/proyectos";  // Redirige a la lista de proyectos
     }
 
     /**
@@ -87,20 +67,17 @@ public class ProyectoController {
     @GetMapping("/editar/{id}")
     public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
         Proyecto proyecto = proyectoService.obtenerProyectoPorId(id);
-        model.addAttribute("proyecto", proyecto);
+        model.addAttribute("proyecto", proyecto);// Agrega el proyecto al modelo
         return "proyectos/editar";
     }
 
     /**
-     * Actualiza un proyecto en la base de datos.
-     * @param id ID del proyecto.
-     * @param proyecto Datos actualizados.
-     * @return Redirección a la lista de proyectos.
+     * Maneja la solicitud POST para actualizar un proyecto existente en la base de datos.
      */
     @PostMapping("/actualizar/{id}")
     public String actualizarProyecto(@PathVariable Long id, @ModelAttribute Proyecto proyecto) {
-        proyectoService.actualizarProyecto(id, proyecto);
-        return "redirect:/proyectos";
+        proyectoService.actualizarProyecto(id, proyecto);  
+        return "redirect:/proyectos";  // Redirige a la página de listado de proyectos.
     }
 
     /**

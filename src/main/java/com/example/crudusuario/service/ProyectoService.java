@@ -1,7 +1,9 @@
 package com.example.crudusuario.service;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
+
 import com.example.crudusuario.model.Proyecto;
 import com.example.crudusuario.repository.ProyectoRepository;
 
@@ -27,7 +29,7 @@ public class ProyectoService {
         return proyectoRepository.findAll();
     }
 
-    // ✅ MÉTODO PARA OBTENER PROYECTOS POR USUARIO
+    //  MÉTODO PARA OBTENER PROYECTOS POR USUARIO
     public List<Proyecto> obtenerProyectosPorUsuario(String username) {
         return proyectoRepository.findByUsuario_Username(username);
     }

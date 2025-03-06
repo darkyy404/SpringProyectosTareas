@@ -20,11 +20,13 @@ import com.example.crudusuario.service.TareaService;
  * Controlador para gestionar tareas dentro de proyectos.
  */
 @Controller
-@RequestMapping("/tareas")
+@RequestMapping("/tareas") // Define el prefijo de todas las rutas de este controlador
 public class TareaController {
+    //Dependencias del servicio de tareas y proyectos
     private final TareaService tareaService;
     private final ProyectoService proyectoService;
 
+    //Constructor con Inyección de dependencias
     public TareaController(TareaService tareaService, ProyectoService proyectoService) {
         this.tareaService = tareaService;
         this.proyectoService = proyectoService;
@@ -33,17 +35,17 @@ public class TareaController {
     /**
      * Muestra la lista de todas las tareas junto con sus proyectos.
      */
-    @GetMapping("/todas")
+    @GetMapping("/todas") // Indica que este método maneja peticiones GET
     public String listarTodasLasTareas(Model model) {
-        List<Tarea> tareas = tareaService.listarTodasLasTareas();
+        List<Tarea> tareas = tareaService.listarTodasLasTareas(); // Obtiene la lista de tareas desde el servicio
 
-        if (tareas == null || tareas.isEmpty()) {
+        if (tareas.isEmpty()) {
             model.addAttribute("mensaje", "No hay tareas registradas.");
         }
 
-        model.addAttribute("tareas", tareas);
+        model.addAttribute("tareas", tareas); // Agrega las tareas al modelo para la vista
 
-        return "tareas/listado_general";
+        return "tareas/listado_general"; // Devuelve la vista en la carpeta tareas
     }
 
 
@@ -52,16 +54,16 @@ public class TareaController {
      */
     @GetMapping("/proyecto/{proyectoId}")
     public String listarTareasPorProyecto(@PathVariable Long proyectoId, Model model) {
-        Proyecto proyecto = proyectoService.obtenerProyectoPorId(proyectoId);
+        Proyecto proyecto = proyectoService.obtenerProyectoPorId(proyectoId); 
     
         if (proyecto == null) {
             model.addAttribute("error", "El proyecto con ID " + proyectoId + " no existe o ha sido eliminado.");
             return "tareas/index";
         }
     
-        List<Tarea> tareas = tareaService.listarTareasPorProyecto(proyectoId);
+        List<Tarea> tareas = tareaService.listarTareasPorProyecto(proyectoId); // Obtiene la lista de tareas desde el servicio
     
-        if (tareas == null || tareas.isEmpty()) {
+        if (tareas.isEmpty()) {
             model.addAttribute("mensaje", "No hay tareas registradas en los proyectos.");
         }
     
